@@ -1,6 +1,7 @@
 let font;
 let flowers = [];
-let fontsize = 200;
+let fontsize = 300;
+let message = "Happy Mother's Day";
 
 function preload() {
   font = loadFont(
@@ -9,12 +10,15 @@ function preload() {
 }
 
 function setup() {
-  createCanvas(900, 300);
+  createCanvas(windowWidth, windowHeight);
   textFont(font);
   textSize(80);
-  let message = "Happy Mother's Day";
-  let points = font.textToPoints(message, 50, 300, fontsize, {
-    sampleFactor: 0.1, // More precise
+  let bbox = font.textBounds(message, 0, 0, fontsize);
+  let x = (width - bbox.w) / 2;
+  let y = (height + bbox.h) / 2;
+
+  let points = font.textToPoints(message, x, y, fontsize, {
+    sampleFactor: 0.1,
     simplifyThreshold: 0,
   });
 
