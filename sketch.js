@@ -1,7 +1,9 @@
 let font;
 let flowers = [];
-let fontsize = 300;
 let message = "Happy Mother's Day";
+let fontSizeAdjusted;
+let targetPoints = [];
+let readyToAnimate = false;
 
 function preload() {
   font = loadFont(
@@ -12,29 +14,57 @@ function preload() {
 function setup() {
   createCanvas(windowWidth, windowHeight);
   textFont(font);
-  textSize(80);
-  let bbox = font.textBounds(message, 0, 0, fontsize);
-  let x = (width - bbox.w) / 2;
-  let y = (height + bbox.h) / 2;
 
-  let points = font.textToPoints(message, x, y, fontsize, {
-    sampleFactor: 0.1,
-    simplifyThreshold: 0,
-  });
+  // Calculate appropriate font size based on canvas width
+  fontSizeAdjusted = min(width / 10, height / 6);
 
-  for (let pt of points) {
-    flowers.push(new Flower(random(width), random(height), pt));
-  }
+  generateTargetPoints();
+  createFlowers();
 
   background(255);
 }
 
+function generateTargetPoints() {
+  // Clear previous points
+  targetPoints = [];
+
+  // Calculate text positioning to center it
+  textSize(fontSizeAdjusted);
+  let bbox = font.textBounds(message, 0, 0, fontSizeAdjusted);
+  let x = (width - bbox.w) / 2;
+  let y = (height + bbox.h) / 2;
+
+  // Generate points with adaptive sampling factor (more points for larger screens)
+  let sampleFactor = constrain(0.1 * (width / 1000), 0.05, 0.2);
+  targetPoints = font.textToPoints(message, x, y, fontSizeAdjusted, {
+    sampleFactor: sampleFactor,
+    simplifyThreshold: 0,
+  });
+}
+
+function createFlowers() {
+  flowers = [];
+  for (let pt of targetPoints) {
+    flowers.push(new Flower(random(width), random(height), pt));
+  }
+  readyToAnimate = true;
+}
+
 function draw() {
   background(255);
-  for (let f of flowers) {
-    f.update();
-    f.show();
+  if (readyToAnimate) {
+    for (let f of flowers) {
+      f.update();
+      f.show();
+    }
   }
+}
+
+function windowResized() {
+  resizeCanvas(windowWidth, windowHeight);
+  fontSizeAdjusted = min(width / 10, height / 6);
+  generateTargetPoints();
+  createFlowers();
 }
 
 class Flower {
